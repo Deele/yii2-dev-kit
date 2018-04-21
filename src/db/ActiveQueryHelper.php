@@ -11,6 +11,8 @@ use yii\db\ActiveQuery;
  * Class ActiveQueryHelper
  *
  * @author Nils (Deele) <deele@tuta.io>
+ *
+ * @package deele\devkit\db
  */
 class ActiveQueryHelper
 {

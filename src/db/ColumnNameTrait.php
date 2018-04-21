@@ -10,7 +10,7 @@ namespace deele\devkit\db;
  *
  * @author Nils (Deele) <deele@tuta.io>
  *
- * @package common\base
+ * @package deele\devkit\db
  */
 trait ColumnNameTrait
 {

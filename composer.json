@@ -1,5 +1,5 @@
 {
-    "name": "Deele/yii2-dev-kit",
+    "name": "deele/yii2-dev-kit",
     "description": "The development kit extension for the Yii framework",
     "keywords": ["yii2"],
     "type": "yii2-extension",
