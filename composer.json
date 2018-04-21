@@ -1,0 +1,38 @@
+{
+    "name": "Deele/yii2-dev-kit",
+    "description": "The development kit extension for the Yii framework",
+    "keywords": ["yii2"],
+    "type": "yii2-extension",
+    "license": "BSD-3-Clause",
+    "support": {
+        "issues": "https://github.com/Deele/yii2-dev-kit/issues",
+        "wiki": "https://github.com/Deele/yii2-dev-kit/wiki/",
+        "source": "https://github.com/Deele/yii2-dev-kit"
+    },
+    "authors": [
+        {
+            "name": "Nils (Deele)",
+            "email": "deele@tuta.io"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "yiisoft/yii2": "~2.0.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "deele\\devkit\\": "src"
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0.x-dev"
+        }
+    },
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://asset-packagist.org"
+        }
+    ]
+}
