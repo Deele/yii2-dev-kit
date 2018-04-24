@@ -54,7 +54,7 @@ trait HasStatusesTrait
      * @return null|string
      */
     public static function createStatusTitle($status, $language = null) {
-        return ArrayHelper::getValue(self::getStatuses($language), $status);
+        return ArrayHelper::getValue(static::getStatuses($language), $status);
     }
 
     /**
