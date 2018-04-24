@@ -1,6 +1,6 @@
 <?php
 /**
- * Contains \common\base\EnsureIdTrait
+ * Contains \deele\devkit\base\EnsureIdTrait
  */
 
 namespace deele\devkit\base;
