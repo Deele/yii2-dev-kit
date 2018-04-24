@@ -16,6 +16,15 @@ use yii\helpers\VarDumper;
  *
  * @property \yii\caching\Cache $cache {@link CachedByTagTrait::getCache()}
  *
+ * Remember to add event listeners to your `ActiveRecord::init()`:
+ * ~~~
+ * public function init()
+ * {
+ *     $this->listenForChangesToInvalidateCache();
+ *     parent::init();
+ * }
+ * ~~~
+ *
  * @author Nils (Deele) <deele@tuta.io>
  *
  * @package deele\devkit\cache
@@ -266,15 +275,6 @@ trait CachedByTagTrait
                 'tags' => $tags
             ])
         );
-    }
-
-    /**
-     * Attaches event listeners required for caching by default
-     */
-    public function init()
-    {
-        $this->listenForChangesToInvalidateCache();
-        parent::init();
     }
 
     /**
