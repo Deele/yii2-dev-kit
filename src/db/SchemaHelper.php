@@ -187,4 +187,31 @@ class SchemaHelper
 
         return true;
     }
+
+    /**
+     * Returns true, if all given columns for given table does exist
+     *
+     * @param string $tableName
+     * @param array $columns
+     * @param bool $prefixTableName
+     *
+     * @return bool
+     */
+    public static function columnsExist($tableName, $columns, $prefixTableName = true)
+    {
+        if ($prefixTableName) {
+            $tableName = static::prefixedTable($tableName);
+        }
+        $tableSchema = Yii::$app->db->schema->getTableSchema($tableName);
+        if ($tableSchema === null) {
+            return false;
+        }
+        foreach ($columns as $foreignKey) {
+            if (!isset($tableSchema['columns'][$foreignKey])) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }
