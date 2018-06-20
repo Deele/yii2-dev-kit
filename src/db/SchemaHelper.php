@@ -72,7 +72,7 @@ class SchemaHelper
                 [
                     'fk',
                     Inflector::camelize($columnsStr),
-                    Inflector::camelize($table)
+                    Inflector::camelize(static::unPrefixedTable($table))
                 ]
             );
         }
@@ -142,6 +142,21 @@ class SchemaHelper
         } else {
             return $table;
         }
+    }
+
+    /**
+     * Creates table name without surrounded {{% and }} used for table name prefixing
+     *
+     * @param string $table
+     *
+     * @return string
+     */
+    public static function unPrefixedTable($table)
+    {
+        if (substr($table, 0, 3) === '{{%') {
+            return substr($table, 3, -2);
+        }
+
     }
 
     /**
