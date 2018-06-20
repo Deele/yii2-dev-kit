@@ -24,6 +24,24 @@ class SchemaHelper
     const FK_NO_ACTION = 4;
 
     /**
+     * Creates foreign key type name based on index
+     *
+     * @param int $type of the key
+     *
+     * @return string
+     */
+    public static function createForeignKeyType($type)
+    {
+        $map = [
+            static::FK_RESTRICT  => 'RESTRICT',
+            static::FK_CASCADE   => 'CASCADE',
+            static::FK_SET_NULL  => 'SET NULL',
+            static::FK_NO_ACTION => 'NO ACTION',
+        ];
+        return $map[$type];
+    }
+
+    /**
      * Creates foreign key name based on table name and column
      *
      * @param string $table the table
