@@ -70,8 +70,7 @@ trait HasStatusesTrait
     /**
      * Returns current "status" attribute value title
      *
-     * @param string $language the language code (e.g. `en-US`, `en`). If this is null, the current
-     * [[\yii\base\Application::language|application language]] will be used.
+     * @param string $language the language code (e.g. `en-US`, `en`).
      *
      * @return null|string
      */
