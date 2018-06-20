@@ -214,4 +214,35 @@ class SchemaHelper
 
         return true;
     }
+
+    /**
+     * Returns true, if all given foreign keys for given table does exist
+     *
+     * @param string $tableName
+     * @param array $foreignKeys
+     * @param bool $createNames
+     * @param bool $prefixTableName
+     *
+     * @return bool
+     */
+    public static function foreignKeysExist($tableName, $foreignKeys, $createNames = false, $prefixTableName = true)
+    {
+        if ($prefixTableName) {
+            $tableName = static::prefixedTable($tableName);
+        }
+        $tableSchema = Yii::$app->db->schema->getTableSchema($tableName);
+        if ($tableSchema === null) {
+            return false;
+        }
+        foreach ($foreignKeys as $foreignKey) {
+            if ($createNames) {
+                $foreignKey = static::createForeignKeyName($tableName, $foreignKey);
+            }
+            if (!isset($tableSchema['foreignKeys'][$foreignKey])) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }
