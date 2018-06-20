@@ -139,9 +139,9 @@ class SchemaHelper
     {
         if (substr($table, 0, 3) != '{{%') {
             return '{{%' . $table . '}}';
-        } else {
-            return $table;
         }
+
+        return $table;
     }
 
     /**
