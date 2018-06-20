@@ -161,15 +161,14 @@ class SchemaHelper
     }
 
     /**
-     * Returns true, if given tables does exist
+     * Returns true, if all given tables does exist
      *
      * @param string|array $tableNames
-     * @param bool $outputErrors
      * @param bool $prefixNames
      *
      * @return bool
      */
-    public static function tablesExist($tableNames, $outputErrors = true, $prefixNames = true)
+    public static function tablesExist($tableNames, $prefixNames = true)
     {
         if (is_string($tableNames)) {
             $tableNames = explode(
