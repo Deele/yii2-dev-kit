@@ -34,6 +34,16 @@ trait HasStatusesTrait
 {
 
     /**
+     * Returns the name of event that is triggered after status change
+     *
+     * @return string
+     */
+    public static function getEventAfterStatusChangeName()
+    {
+        return 'afterStatusChange';
+    }
+
+    /**
      * Returns possible values of "status" attribute along with value titles
      *
      * @param string $language the language code (e.g. `en-US`, `en`).
@@ -97,7 +107,7 @@ trait HasStatusesTrait
     {
         if (array_key_exists('status', $event->changedAttributes)) {
             $this->trigger(
-                $name,
+                static::getEventAfterStatusChangeName(),
                 new AfterStatusChangeEvent([
                     'oldStatus' => $event->changedAttributes['status'],
                     'newStatus' => $this->status,
