@@ -157,6 +157,7 @@ class SchemaHelper
             return substr($table, 3, -2);
         }
 
+        return $table;
     }
 
     /**
