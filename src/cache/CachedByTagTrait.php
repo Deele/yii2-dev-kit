@@ -33,11 +33,28 @@ trait CachedByTagTrait
 {
 
     /**
+     * @return string|array
+     */
+    public static function getCacheConfig()
+    {
+        return 'cache';
+    }
+
+    /**
      * @return \yii\caching\Cache|\yii\caching\CacheInterface
      */
     public static function getCache()
     {
-        return Yii::$app->cache;
+        $cacheConfig = static::getCacheConfig();
+        if (is_string($cacheConfig)) {
+            return Yii::$app->{$cacheConfig};
+        } elseif (is_array($cacheConfig)) {
+            return Yii::createObject($cacheConfig);
+        }
+
+        return Yii::createObject([
+            'class' => 'yii\caching\DummyCache'
+        ]);
     }
 
     /**
@@ -131,7 +148,7 @@ trait CachedByTagTrait
     public static function caches()
     {
         return [
-          'cache'
+            $this->getCache()
         ];
     }
 
@@ -142,16 +159,20 @@ trait CachedByTagTrait
      */
     public static function clearCacheByTags($tags)
     {
-        foreach (static::caches() as $cacheId) {
+        foreach (static::caches() as $cache) {
 
             /**
-             * @var \yii\caching\Cache $cache
+             * @var \yii\caching\Cache|string $cache
              */
-            $cache = Yii::$app->get($cacheId);
-            TagDependency::invalidate(
-                $cache,
-                $tags
-            );
+            if (is_string($cache)) {
+                $cache = Yii::$app->get($cacheId);
+            }
+            if (is_object($cache)) {
+                TagDependency::invalidate(
+                    $cache,
+                    $tags
+                );
+            }
         }
         if (YII_DEBUG) {
             Yii::debug(
