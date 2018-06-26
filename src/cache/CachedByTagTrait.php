@@ -148,7 +148,7 @@ trait CachedByTagTrait
     public static function caches()
     {
         return [
-            $this->getCache()
+            static::getCache()
         ];
     }
 
