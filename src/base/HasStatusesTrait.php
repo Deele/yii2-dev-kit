@@ -47,10 +47,11 @@ trait HasStatusesTrait
      * Returns possible values of "status" attribute along with value titles
      *
      * @param string $language the language code (e.g. `en-US`, `en`).
+     * @param bool $withLabels return statuses with translated labels or plain array
      *
      * @return array
      */
-    public static function getStatuses($language = null)
+    public static function getStatuses($language = null, $withLabels = true)
     {
         return [];
     }
@@ -89,10 +90,17 @@ trait HasStatusesTrait
     public function changeStatus($newStatus, $autoSave = true, $runValidation = false)
     {
         $success = true;
-        if ($this->status != $newStatus && in_array($newStatus, $this->statuses)) {
-            $this->status = $newStatus;
-            if ($autoSave) {
-                $success = $this->save($runValidation);
+        if ($this->status != $newStatus) {
+            if (in_array($newStatus, $this->getStatuses(null, false))) {
+                $this->status = $newStatus;
+                if ($autoSave) {
+                    $success = $this->save($runValidation);
+                }
+            } else {
+                Yii::error(
+                    'Invalid status: ' .
+                    VarDumper::dumpAsString($newStatus)
+                );
             }
         }
 
