@@ -17,12 +17,36 @@ This is a Yii framework v2.x component development kit that provides additions, 
 - Column Name Trait
     - `deele\devkit\db\ColumnNameTrait`
 
+### Behaviors
+
+- Identifier Behavior
+    - `deele\devkit\behaviors\IdentifierBehavior`
+- Statuses Behavior
+    - `deele\devkit\behaviors\StatusesBehavior`
+- Status Transitions Behavior
+    - `deele\devkit\behaviors\StatusTransitionsBehavior`
+
 ### Helpers
 
+- Date formatter
+    - `deele\devkit\helpers\DateFormatter`
+- File helper
+    - `deele\devkit\helpers\FileHelper`
 - Active Query helper
   - `deele\devkit\db\ActiveQueryHelper`
 - Schema helper
   - `deele\devkit\db\SchemaHelper`
+
+### Interfaces
+
+- Statuses Interface
+    - `deele\devkit\interfaces\StatusesInterface`
+- Statuses Static Interface
+    - `deele\devkit\interfaces\StatusesStaticInterface`
+- Transitionable Statuses Interface
+    - `deele\devkit\interfaces\TransitionableStatusesInterface`
+- Transitionable Statuses Static Interface
+    - `deele\devkit\interfaces\TransitionableStatusesStaticInterface`
 
 ## Use cases
 
@@ -88,3 +112,7 @@ public static function getStatuses(?string $language = null, bool $withLabels = 
 ###### React after status change has happened
 
 [//]: <> (@todo Example of listening to status change event)
+
+#### Statuses behavior for complex statuses
+
+[//]: <> (@todo Document deele\devkit\behaviors\IdentifierBehavior)
