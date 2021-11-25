@@ -5,9 +5,11 @@
 
 namespace deele\devkit\base;
 
+use Exception;
 use Yii;
+use yii\base\Component;
+use yii\db\AfterSaveEvent;
 use yii\helpers\ArrayHelper;
-use yii\db\ActiveRecord;
 use yii\helpers\VarDumper;
 
 /**
@@ -39,7 +41,7 @@ trait HasStatusesTrait
      *
      * @return string
      */
-    public static function getEventAfterStatusChangeName()
+    public static function getEventAfterStatusChangeName(): string
     {
         return 'afterStatusChange';
     }
@@ -47,12 +49,12 @@ trait HasStatusesTrait
     /**
      * Returns possible values of "status" attribute along with value titles
      *
-     * @param string $language the language code (e.g. `en-US`, `en`).
+     * @param string|null $language the language code (e.g. `en-US`, `en`).
      * @param bool $withLabels return statuses with translated labels or plain array
      *
      * @return array
      */
-    public static function getStatuses($language = null, $withLabels = true)
+    public static function getStatuses(?string $language = null, bool $withLabels = true): array
     {
         return [];
     }
@@ -61,22 +63,27 @@ trait HasStatusesTrait
      * Creates status title based on identifier
      *
      * @param int $status Status identifier.
-     * @param string $language the language code (e.g. `en-US`, `en`).
+     * @param string|null $language the language code (e.g. `en-US`, `en`).
      *
      * @return null|string
      */
-    public static function createStatusTitle($status, $language = null) {
-        return ArrayHelper::getValue(static::getStatuses($language), $status);
+    public static function createStatusTitle(int $status, string $language = null): ?string
+    {
+        try {
+            return ArrayHelper::getValue(static::getStatuses($language), $status);
+        } catch (Exception $e) {
+            return null;
+        }
     }
 
     /**
      * Returns current "status" attribute value title
      *
-     * @param string $language the language code (e.g. `en-US`, `en`).
+     * @param string|null $language the language code (e.g. `en-US`, `en`).
      *
      * @return null|string
      */
-    public function getStatusTitle($language = null)
+    public function getStatusTitle(string $language = null): ?string
     {
         return static::createStatusTitle($this->status, $language);
     }
@@ -88,20 +95,23 @@ trait HasStatusesTrait
      *
      * @return bool
      */
-    public function changeStatus($newStatus, $autoSave = true, $runValidation = false)
+    public function changeStatus(int $newStatus, bool $autoSave = true, bool $runValidation = false): bool
     {
         $success = true;
-        if ($this->status != $newStatus) {
-            if (in_array($newStatus, $this->getStatuses(null, false))) {
+        if ($this->status !== $newStatus) {
+            if (in_array($newStatus, static::getStatuses(null, false), true)) {
                 $this->status = $newStatus;
-                if ($autoSave) {
+                if ($autoSave && method_exists($this, 'save')) {
                     $success = $this->save($runValidation);
                 }
             } else {
-                Yii::error(
-                    'Invalid status: ' .
-                    VarDumper::dumpAsString($newStatus)
-                );
+                $success = false;
+                if (class_exists('Yii')) {
+                    Yii::error(
+                        'Invalid status: ' .
+                        VarDumper::dumpAsString($newStatus)
+                    );
+                }
             }
         }
 
@@ -111,7 +121,7 @@ trait HasStatusesTrait
     /**
      * @param AfterSaveEvent $event
      */
-    public function handleTriggersAfterStatusChange($event)
+    public function handleTriggersAfterStatusChange(AfterSaveEvent $event): void
     {
         if (array_key_exists('status', $event->changedAttributes)) {
             $this->trigger(
@@ -126,14 +136,12 @@ trait HasStatusesTrait
 
     /**
      * Attaches event listeners to object to listen for update and create events to handle status change
+     *
+     * This should be called from AR init function
      */
-    public function listenForStatusChanges()
+    public function listenForStatusChanges(): void
     {
-        if ($this instanceof ActiveRecord) {
-
-            /**
-             * @var StatusesTrait|ActiveRecord $this
-             */
+        if ($this instanceof Component) {
             $this->on(
                 $this::EVENT_AFTER_INSERT,
                 [$this, 'handleTriggersAfterStatusChange']
