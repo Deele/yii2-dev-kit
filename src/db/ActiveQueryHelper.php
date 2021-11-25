@@ -5,6 +5,8 @@
 
 namespace deele\devkit\db;
 
+use Closure;
+use DateTime;
 use yii\db\ActiveQuery;
 
 /**
@@ -26,10 +28,10 @@ class ActiveQueryHelper
      * @return ActiveQuery|array
      */
     public static function byBooleanValue(
-        &$query,
-        $columnName,
+        ActiveQuery $query,
+        string $columnName,
         $state = true,
-        $conditionType = 'and'
+        ?string $conditionType = 'and'
     ) {
         if (is_bool($state)) {
             if ($state) {
@@ -52,30 +54,32 @@ class ActiveQueryHelper
                 $state
             ];
         }
-        if ($conditionType == 'and') {
+        if ($conditionType === 'and') {
             return $query->andOnCondition($condition);
-        } elseif ($conditionType == 'or') {
-            return $query->orOnCondition($condition);
-        } else {
-            return $condition;
         }
+
+        if ($conditionType === 'or') {
+            return $query->orOnCondition($condition);
+        }
+
+        return $condition;
     }
 
     /**
      * @param ActiveQuery $query
      * @param string $columnName
-     * @param null|string|\DateTime $value
+     * @param null|string|DateTime $value
      * @param bool|string $state Either boolean value (for equality) or valid SQL comparison operator
      * @param string|null $conditionType
      *
      * @return ActiveQuery|array
      */
     public static function byDateTime(
-        &$query,
-        $columnName,
+        ActiveQuery $query,
+        string $columnName,
         $value,
         $state = true,
-        $conditionType = 'and'
+        ?string $conditionType = 'and'
     ) {
         if (is_null($value)) {
             if (is_bool($state)) {
@@ -100,7 +104,7 @@ class ActiveQueryHelper
                 ];
             }
         } else {
-            if ($value instanceof \DateTime) {
+            if ($value instanceof DateTime) {
                 $value = $value->format('Y-m-d H:i:s');
             }
             if (is_bool($state)) {
@@ -123,13 +127,15 @@ class ActiveQueryHelper
                 ];
             }
         }
-        if ($conditionType == 'and') {
+        if ($conditionType === 'and') {
             return $query->andOnCondition($condition);
-        } elseif ($conditionType == 'or') {
-            return $query->orOnCondition($condition);
-        } else {
-            return $condition;
         }
+
+        if ($conditionType === 'or') {
+            return $query->orOnCondition($condition);
+        }
+
+        return $condition;
     }
 
     /**
@@ -137,18 +143,18 @@ class ActiveQueryHelper
      * @param string $columnName
      * @param null|string|array $value
      * @param bool|string $state Either boolean value (for equality) or valid SQL comparison operator
-     * @param \Closure|bool $processValue
+     * @param Closure|bool $processValue
      * @param string|null $conditionType
      *
      * @return ActiveQuery|array
      */
     public static function byStringValue(
-        &$query,
-        $columnName,
+        ActiveQuery $query,
+        string $columnName,
         $value,
         $state = true,
         $processValue = false,
-        $conditionType = 'and'
+        ?string $conditionType = 'and'
     ) {
         if (is_null($value)) {
             if (is_bool($state)) {
@@ -173,12 +179,9 @@ class ActiveQueryHelper
                 ];
             }
         } elseif (is_array($value)) {
-            if ($processValue instanceof \Closure) {
+            if ($processValue instanceof Closure) {
                 foreach ($value as $k => $v) {
-                    $value[$k] = call_user_func(
-                        $processValue,
-                        $v
-                    );
+                    $value[$k] = $processValue($v);
                 }
             }
             if (is_bool($state)) {
@@ -203,11 +206,8 @@ class ActiveQueryHelper
                 ];
             }
         } else {
-            if ($processValue instanceof \Closure) {
-                $value = call_user_func(
-                    $processValue,
-                    $value
-                );
+            if ($processValue instanceof Closure) {
+                $value = $processValue($value);
             }
             if (is_bool($state)) {
                 if ($state) {
@@ -231,13 +231,15 @@ class ActiveQueryHelper
                 ];
             }
         }
-        if ($conditionType == 'and') {
+        if ($conditionType === 'and') {
             return $query->andOnCondition($condition);
-        } elseif ($conditionType == 'or') {
-            return $query->orOnCondition($condition);
-        } else {
-            return $condition;
         }
+
+        if ($conditionType === 'or') {
+            return $query->orOnCondition($condition);
+        }
+
+        return $condition;
     }
 
     /**
@@ -245,18 +247,18 @@ class ActiveQueryHelper
      * @param string $columnName
      * @param null|string|int|array $value
      * @param bool|string $state Either boolean value (for equality) or valid SQL comparison operator
-     * @param \Closure|bool $processValue
+     * @param Closure|bool $processValue
      * @param string|null $conditionType
      *
      * @return ActiveQuery|array
      */
     public static function byNumericValue(
-        &$query,
-        $columnName,
+        ActiveQuery $query,
+        string $columnName,
         $value,
         $state = true,
         $processValue = false,
-        $conditionType = 'and'
+        ?string $conditionType = 'and'
     ) {
         if (is_null($value)) {
             if (is_bool($state)) {
@@ -281,12 +283,9 @@ class ActiveQueryHelper
                 ];
             }
         } elseif (is_array($value)) {
-            if ($processValue instanceof \Closure) {
+            if ($processValue instanceof Closure) {
                 foreach ($value as $k => $v) {
-                    $value[$k] = call_user_func(
-                        $processValue,
-                        $v
-                    );
+                    $value[$k] = $processValue($v);
                 }
             }
             if (is_bool($state)) {
@@ -311,11 +310,8 @@ class ActiveQueryHelper
                 ];
             }
         } else {
-            if ($processValue instanceof \Closure) {
-                $value = call_user_func(
-                    $processValue,
-                    $value
-                );
+            if ($processValue instanceof Closure) {
+                $value = $processValue($value);
             }
             if (is_bool($state)) {
                 if ($state) {
@@ -337,12 +333,14 @@ class ActiveQueryHelper
                 ];
             }
         }
-        if ($conditionType == 'and') {
+        if ($conditionType === 'and') {
             return $query->andOnCondition($condition);
-        } elseif ($conditionType == 'or') {
-            return $query->orOnCondition($condition);
-        } else {
-            return $condition;
         }
+
+        if ($conditionType === 'or') {
+            return $query->orOnCondition($condition);
+        }
+
+        return $condition;
     }
 }

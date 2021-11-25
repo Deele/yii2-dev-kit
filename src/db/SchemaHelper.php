@@ -6,7 +6,6 @@
 namespace deele\devkit\db;
 
 use Yii;
-use yii\db\Exception;
 use yii\helpers\Inflector;
 
 /**
@@ -18,10 +17,10 @@ use yii\helpers\Inflector;
  */
 class SchemaHelper
 {
-    const FK_RESTRICT = 1;
-    const FK_CASCADE = 2;
-    const FK_SET_NULL = 3;
-    const FK_NO_ACTION = 4;
+    public const FK_RESTRICT = 1;
+    public const FK_CASCADE = 2;
+    public const FK_SET_NULL = 3;
+    public const FK_NO_ACTION = 4;
 
     /**
      * Creates foreign key type name based on index
@@ -30,7 +29,7 @@ class SchemaHelper
      *
      * @return string
      */
-    public static function createForeignKeyType($type)
+    public static function createForeignKeyType(int $type): string
     {
         $map = [
             static::FK_RESTRICT  => 'RESTRICT',
@@ -45,14 +44,14 @@ class SchemaHelper
      * Creates foreign key name based on table name and column
      *
      * @param string $table the table
-     * @param string $columns the column(s) that should be used to create the
+     * @param string|array $columns the column(s) that should be used to create the
      *   foreign key name.
-     * @param null|string $name of the foreign key. Imploded column names is
+     * @param string|null $name of the foreign key. Imploded column names is
      *   used when no name given.
      *
      * @return string
      */
-    public static function createForeignKeyName($table, $columns, $name = null)
+    public static function createForeignKeyName(string $table, $columns, string $name = null): ?string
     {
         if (is_null($name)) {
             if (is_array($columns)) {
@@ -92,18 +91,19 @@ class SchemaHelper
      *
      * @param string|array $columns the column(s) that should be used to create
      *   the index name.
-     * @param null|string $name of the index. Imploded column names is used when
+     * @param string|null $name of the index. Imploded column names is used when
      *   no name given.
      *
      * @return string
      */
-    public static function createIndexName($columns, $name = null)
+    public static function createIndexName($columns, string $name = null): ?string
     {
         if (is_null($name)) {
             if (is_array($columns)) {
                 foreach ($columns as &$column) {
                     $column = Inflector::camelize($column);
                 }
+                unset($column);
                 $columnsStr = implode(
                     '_',
                     $columns
@@ -135,9 +135,9 @@ class SchemaHelper
      *
      * @return string
      */
-    public static function prefixedTable($table)
+    public static function prefixedTable(string $table): string
     {
-        if (substr($table, 0, 3) != '{{%') {
+        if (strpos($table, '{{%') !== 0) {
             return '{{%' . $table . '}}';
         }
 
@@ -151,9 +151,9 @@ class SchemaHelper
      *
      * @return string
      */
-    public static function unPrefixedTable($table)
+    public static function unPrefixedTable(string $table): string
     {
-        if (substr($table, 0, 3) === '{{%') {
+        if (strpos($table, '{{%') === 0) {
             return substr($table, 3, -2);
         }
 
@@ -168,7 +168,7 @@ class SchemaHelper
      *
      * @return bool
      */
-    public static function tablesExist($tableNames, $prefixNames = true)
+    public static function tablesExist($tableNames, bool $prefixNames = true): bool
     {
         if (is_string($tableNames)) {
             $tableNames = explode(
@@ -197,7 +197,7 @@ class SchemaHelper
      *
      * @return bool
      */
-    public static function columnsExist($tableName, $columns, $prefixTableName = true)
+    public static function columnsExist(string $tableName, array $columns, bool $prefixTableName = true): bool
     {
         if ($prefixTableName) {
             $tableName = static::prefixedTable($tableName);
@@ -225,8 +225,12 @@ class SchemaHelper
      *
      * @return bool
      */
-    public static function foreignKeysExist($tableName, $foreignKeys, $createNames = false, $prefixTableName = true)
-    {
+    public static function foreignKeysExist(
+        string $tableName,
+        array $foreignKeys,
+        bool $createNames,
+        bool $prefixTableName = true
+    ): bool {
         if ($prefixTableName) {
             $tableName = static::prefixedTable($tableName);
         }

@@ -5,7 +5,8 @@
 
 namespace deele\devkit\base;
 
-use Yii;
+use Exception;
+use yii\db\AfterSaveEvent;
 use yii\helpers\ArrayHelper;
 use yii\db\ActiveRecord;
 
@@ -29,6 +30,8 @@ use yii\db\ActiveRecord;
  * @author Nils (Deele) <deele@tuta.io>
  *
  * @package deele\devkit\base
+ * @method save(bool $runValidation)
+ * @method trigger(string $getEventAfterTypeChangeName, AfterTypeChangeEvent $param)
  */
 trait HasTypesTrait
 {
@@ -38,7 +41,7 @@ trait HasTypesTrait
      *
      * @return string
      */
-    public static function getEventAfterTypeChangeName()
+    public static function getEventAfterTypeChangeName(): string
     {
         return 'afterTypeChange';
     }
@@ -46,11 +49,11 @@ trait HasTypesTrait
     /**
      * Returns possible values of "type" attribute along with value titles
      *
-     * @param string $language the language code (e.g. `en-US`, `en`).
+     * @param string|null $language the language code (e.g. `en-US`, `en`).
      *
      * @return array
      */
-    public static function getTypes($language = null)
+    public static function getTypes(?string $language = null): array
     {
         return [];
     }
@@ -59,22 +62,25 @@ trait HasTypesTrait
      * Creates type title based on identifier
      *
      * @param int $type Type identifier.
-     * @param string $language the language code (e.g. `en-US`, `en`).
+     * @param string|null $language the language code (e.g. `en-US`, `en`).
      *
      * @return null|string
+     * @throws Exception
      */
-    public static function createTypeTitle($type, $language = null) {
+    public static function createTypeTitle(int $type, ?string $language = null)
+    {
         return ArrayHelper::getValue(static::getTypes($language), $type);
     }
 
     /**
      * Returns current "type" attribute value title
      *
-     * @param string $language the language code (e.g. `en-US`, `en`).
+     * @param string|null $language the language code (e.g. `en-US`, `en`).
      *
      * @return null|string
+     * @throws Exception
      */
-    public function getTypeTitle($language = null)
+    public function getTypeTitle(?string $language = null): ?string
     {
         return static::createTypeTitle($this->type, $language);
     }
@@ -86,10 +92,10 @@ trait HasTypesTrait
      *
      * @return bool
      */
-    public function changeType($newType, $autoSave = true, $runValidation = false)
+    public function changeType(int $newType, bool $autoSave = true, bool $runValidation = false): bool
     {
         $success = true;
-        if ($this->type != $newType && in_array($newType, $this->types)) {
+        if ($this->type !== $newType && in_array($newType, $this->types, true)) {
             $this->type = $newType;
             if ($autoSave) {
                 $success = $this->save($runValidation);
@@ -102,7 +108,7 @@ trait HasTypesTrait
     /**
      * @param AfterSaveEvent $event
      */
-    public function handleTriggersAfterTypeChange($event)
+    public function handleTriggersAfterTypeChange(AfterSaveEvent $event): void
     {
         if (array_key_exists('type', $event->changedAttributes)) {
             $this->trigger(
@@ -118,13 +124,9 @@ trait HasTypesTrait
     /**
      * Attaches event listeners to object to listen for update and create events to handle type change
      */
-    public function listenForTypeChanges()
+    public function listenForTypeChanges(): void
     {
         if ($this instanceof ActiveRecord) {
-
-            /**
-             * @var TypesTrait|ActiveRecord $this
-             */
             $this->on(
                 $this::EVENT_AFTER_INSERT,
                 [$this, 'handleTriggersAfterTypeChange']

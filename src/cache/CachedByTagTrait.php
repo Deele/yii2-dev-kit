@@ -6,15 +6,20 @@
 namespace deele\devkit\cache;
 
 use Yii;
+use yii\base\InvalidConfigException;
+use yii\caching\Cache;
+use yii\caching\CacheInterface;
 use yii\caching\TagDependency;
 use yii\db\ActiveRecord;
 use yii\db\AfterSaveEvent;
+use yii\helpers\Json;
 use yii\helpers\VarDumper;
+use yii\caching\DummyCache;
 
 /**
  * Class CachedByTagTrait
  *
- * @property \yii\caching\Cache $cache {@link CachedByTagTrait::getCache()}
+ * @property Cache $cache {@link CachedByTagTrait::getCache()}
  *
  * Remember to add event listeners to your `ActiveRecord::init()`:
  * ~~~
@@ -24,6 +29,8 @@ use yii\helpers\VarDumper;
  *     parent::init();
  * }
  * ~~~
+ *
+ * @property string $primaryKey
  *
  * @author Nils (Deele) <deele@tuta.io>
  *
@@ -41,19 +48,22 @@ trait CachedByTagTrait
     }
 
     /**
-     * @return \yii\caching\Cache|\yii\caching\CacheInterface
+     * @return CacheInterface|object
+     * @throws InvalidConfigException
      */
-    public static function getCache()
+    public static function getCache(): object
     {
         $cacheConfig = static::getCacheConfig();
         if (is_string($cacheConfig)) {
             return Yii::$app->{$cacheConfig};
-        } elseif (is_array($cacheConfig)) {
+        }
+
+        if (is_array($cacheConfig)) {
             return Yii::createObject($cacheConfig);
         }
 
         return Yii::createObject([
-            'class' => 'yii\caching\DummyCache'
+            'class' => DummyCache::class
         ]);
     }
 
@@ -63,10 +73,9 @@ trait CachedByTagTrait
      *
      * @return string
      */
-    public static function cacheTagName()
+    public static function cacheTagName(): string
     {
-        $class = static::class;
-        return $class;
+        return static::class;
     }
 
     /**
@@ -76,13 +85,12 @@ trait CachedByTagTrait
      *
      * @return string
      */
-    public static function cacheTagNameForId($id)
+    public static function cacheTagNameForId($id): string
     {
         if (is_numeric($id)) {
             $id = (float) $id;
-        }
-        else {
-            $id = json_encode($id);
+        } else {
+            $id = Json::encode($id);
         }
         return static::cacheTagName() . '.' . $id;
     }
@@ -92,17 +100,15 @@ trait CachedByTagTrait
      *
      * @return string
      */
-    public static function commonCacheTagName()
+    public static function commonCacheTagName(): string
     {
         return static::cacheTagName() . '.common';
     }
 
     /**
      * Invalidates all cached data related to this package
-     *
-     * @throws \yii\base\InvalidConfigException
      */
-    public static function invalidateAllCachedData()
+    public static function invalidateAllCachedData(): void
     {
         static::clearCacheByTags(static::cacheTagName());
     }
@@ -112,7 +118,7 @@ trait CachedByTagTrait
      *
      * @param mixed $id
      */
-    public static function afterInvalidateCachedDataById($id)
+    public static function afterInvalidateCachedDataById($id): void
     {
     }
 
@@ -121,7 +127,7 @@ trait CachedByTagTrait
      *
      * @param mixed $id
      */
-    public static function invalidateCachedDataById($id)
+    public static function invalidateCachedDataById($id): void
     {
         static::clearCommonCache([
             static::cacheTagNameForId($id)
@@ -134,7 +140,7 @@ trait CachedByTagTrait
      *
      * @param array $dependencyTags
      */
-    public static function clearCommonCache($dependencyTags = [])
+    public static function clearCommonCache(array $dependencyTags = []): void
     {
         $dependencyTags[] = static::commonCacheTagName();
         static::clearCacheByTags($dependencyTags);
@@ -144,8 +150,9 @@ trait CachedByTagTrait
      * Returns all caches component names that are used
      *
      * @return array
+     * @throws InvalidConfigException
      */
-    public static function caches()
+    public static function caches(): array
     {
         return [
             static::getCache()
@@ -156,16 +163,17 @@ trait CachedByTagTrait
      * Invalidates cached data by tags
      *
      * @param string|array $tags
+     * @throws InvalidConfigException
      */
-    public static function clearCacheByTags($tags)
+    public static function clearCacheByTags($tags): void
     {
         foreach (static::caches() as $cache) {
 
             /**
-             * @var \yii\caching\Cache|string $cache
+             * @var Cache|string $cache
              */
             if (is_string($cache)) {
-                $cache = Yii::$app->get($cacheId);
+                $cache = Yii::$app->get($cache);
             }
             if (is_object($cache)) {
                 TagDependency::invalidate(
@@ -176,7 +184,7 @@ trait CachedByTagTrait
         }
         if (YII_DEBUG) {
             Yii::debug(
-                "Cache cleared by tags: " .
+                'Cache cleared by tags: ' .
                 VarDumper::export($tags),
                 'application.caching'
             );
@@ -186,7 +194,7 @@ trait CachedByTagTrait
     /**
      * Invalidates cached data related to this model
      */
-    public function invalidateCachedData()
+    public function invalidateCachedData(): void
     {
 
         /**
@@ -199,8 +207,9 @@ trait CachedByTagTrait
      * @param mixed $key
      *
      * @return bool
+     * @throws InvalidConfigException
      */
-    public static function cacheExists($key)
+    public static function cacheExists($key): bool
     {
         return static::getCache()->exists(
             $key
@@ -211,13 +220,14 @@ trait CachedByTagTrait
      * @param mixed $key
      *
      * @return mixed
+     * @throws InvalidConfigException
      */
     public static function cacheGet($key)
     {
         $data = static::getCache()->get($key);
         if ($data !== false && YII_DEBUG) {
             Yii::debug(
-                "Data served from cache: " .
+                'Data served from cache: ' .
                 VarDumper::export($key),
                 'application.caching'
             );
@@ -234,9 +244,9 @@ trait CachedByTagTrait
      *
      * @return bool
      */
-    public function cacheSet($key, $value, $duration = 2629743, $dependencyTags = null)
+    public function cacheSet($key, $value, ?int $duration = 2629743, ?array $dependencyTags = null): bool
     {
-        return $this->cacheSetDependsOnId($key, $value, $this->primaryKey, $duration, $dependencyTags);
+        return static::cacheSetDependsOnId($key, $value, $this->primaryKey, $duration, $dependencyTags);
     }
 
     /**
@@ -248,8 +258,13 @@ trait CachedByTagTrait
      *
      * @return bool
      */
-    public static function cacheSetDependsOnId($key, $value, $id = null, $duration = 2629743, $dependencyTags = [])
-    {
+    public static function cacheSetDependsOnId(
+        $key,
+        $value,
+        ?int $id = null,
+        ?int $duration = 2629743,
+        array $dependencyTags = []
+    ): bool {
         if (!is_null($id)) {
             $dependencyTags[] = static::cacheTagNameForId($id);
         }
@@ -258,7 +273,7 @@ trait CachedByTagTrait
     }
 
     /**
-     * Caches data in common in common cache set
+     * Caches data in common cache set
      *
      * @param mixed $key
      * @param mixed $value
@@ -266,8 +281,9 @@ trait CachedByTagTrait
      * @param null|array $dependencyTags
      *
      * @return bool
+     * @throws InvalidConfigException
      */
-    public static function cacheCommon($key, $value, $duration = 2629743, $dependencyTags = null)
+    public static function cacheCommon($key, $value, ?int $duration = 2629743, ?array $dependencyTags = null): bool
     {
         $tags = [
             static::cacheTagName(),
@@ -281,7 +297,7 @@ trait CachedByTagTrait
         }
         if (YII_DEBUG) {
             Yii::debug(
-                "Cached by key: " .
+                'Cached by key: ' .
                 VarDumper::export($key) .
                 "\nDepends on tags: " .
                 VarDumper::export($tags),
@@ -301,7 +317,7 @@ trait CachedByTagTrait
     /**
      * Attaches event listeners to object to listen for update and create events to invalidate cache
      */
-    public function listenForChangesToInvalidateCache()
+    public function listenForChangesToInvalidateCache(): void
     {
         if ($this instanceof ActiveRecord) {
 
@@ -328,7 +344,7 @@ trait CachedByTagTrait
      *
      * @param AfterSaveEvent $event
      */
-    public function invalidateCachedDataByEvent($event)
+    public function invalidateCachedDataByEvent(AfterSaveEvent $event): void
     {
         static::invalidateCachedDataById($event->sender->primaryKey);
     }
@@ -336,7 +352,7 @@ trait CachedByTagTrait
     /**
      * Clears common cached data
      */
-    public function clearCommonCacheByEvent()
+    public function clearCommonCacheByEvent(): void
     {
         static::clearCommonCache();
     }

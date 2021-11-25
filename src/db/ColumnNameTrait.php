@@ -20,7 +20,7 @@ trait ColumnNameTrait
      *
      * @return string
      */
-    public function columnName($column)
+    public function columnName(string $column): string
     {
         return $column;
     }
